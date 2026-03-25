@@ -44,6 +44,14 @@ for f in sorted(xlsx_files):
 df = read_all_heaters(data_path)
 print(f"\nDataFrame combinado: {df.shape[0]} rows x {df.shape[1]} columns")
 
+#COMMAND -----------
+
+import os
+data_path = '/Workspace/Users/david.alanis@watlow.com/heater-analyzer/data'
+print(os.path.exists(data_path))
+for f in os.listdir(data_path):
+    print(f"  '{f}'")
+
 # COMMAND ----------
 
 # MAGIC %md
