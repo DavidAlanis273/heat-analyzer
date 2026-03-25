@@ -47,10 +47,15 @@ print(f"\nDataFrame combinado: {df.shape[0]} rows x {df.shape[1]} columns")
 #COMMAND -----------
 
 import os
-data_path = '/Workspace/Users/david.alanis@watlow.com/heater-analyzer/data'
-print(os.path.exists(data_path))
-for f in os.listdir(data_path):
-    print(f"  '{f}'")
+base = '/Workspace/Users/david.alanis@watlow.com'
+print(f"Base exists: {os.path.exists(base)}")
+if os.path.exists(base):
+    for f in os.listdir(base):
+        print(f"  {f}")
+else:
+    print("Trying without /Workspace...")
+    base2 = '/Users/david.alanis@watlow.com'
+    print(f"Base2 exists: {os.path.exists(base2)}")
 
 # COMMAND ----------
 
