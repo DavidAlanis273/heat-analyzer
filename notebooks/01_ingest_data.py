@@ -2,8 +2,7 @@
 
 # COMMAND ----------
 
-# MAGIC 
-%pip install openpyxl --quiet
+# MAGIC %pip install openpyxl --quiet
 
 # COMMAND ----------
 

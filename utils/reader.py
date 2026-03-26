@@ -1,23 +1,16 @@
 import pandas as pd
 import os
+import re
 
 
 def read_heater_excel(filepath):
     """
     Lee un archivo Excel de prueba de calefactor.
     Los datos están en Sheet2, con metadata en Sheet1.
-    
-    Args:
-        filepath: ruta al archivo .xlsx
-    
-    Returns:
-        DataFrame con los datos limpios de Sheet2
     """
-    # Leer Sheet2 donde están los datos
     df = pd.read_excel(filepath, sheet_name="Sheet2", engine="openpyxl")
     
-    # Identificar las columnas de datos reales (antes de las tablas de resumen)
-    # Las tablas de resumen empiezan después de columnas con None en el header
+    # Identificar columnas de datos reales (antes de columnas vacías)
     data_cols = []
     for col in df.columns:
         if col is None or str(col).startswith("Unnamed"):
@@ -25,14 +18,8 @@ def read_heater_excel(filepath):
         data_cols.append(col)
     
     df = df[data_cols].copy()
-    
-    # Limpiar nombres de columnas (quitar espacios extra)
     df.columns = [str(c).strip() for c in df.columns]
-    
-    # Convertir la columna de tiempo a seconds elapsed
     df = _convert_time_to_seconds(df)
-    
-    # Eliminar filas completamente vacías
     df = df.dropna(how="all")
     
     return df
@@ -40,11 +27,10 @@ def read_heater_excel(filepath):
 
 def _convert_time_to_seconds(df):
     """
-    Convierte la columna Time (Sec) de hora del día a 
-    segundos transcurridos desde el inicio de la prueba.
+    Convierte la columna de tiempo a segundos transcurridos.
+    Maneja correctamente el cruce de 12h (PM) y medianoche.
     """
-    time_col = df.columns[0]  # primera columna es siempre el tiempo
-    
+    time_col = df.columns[0]
     times = df[time_col].copy()
     
     # Convertir time objects a total seconds desde medianoche
@@ -56,15 +42,22 @@ def _convert_time_to_seconds(df):
         else:
             total_seconds.append(None)
     
-    # Calcular elapsed seconds desde el primer reading
-    start = total_seconds[0]
-    elapsed = []
-    for s in total_seconds:
-        if s is not None and start is not None:
-            diff = s - start
+    # Calcular elapsed usando diferencias consecutivas
+    # Si la diferencia es negativa, verificar si es un cruce de 12h o de 24h
+    elapsed = [0]
+    for i in range(1, len(total_seconds)):
+        if total_seconds[i] is not None and total_seconds[i-1] is not None:
+            diff = total_seconds[i] - total_seconds[i-1]
             if diff < 0:
-                diff += 86400  # cruzó medianoche
-            elapsed.append(diff)
+                # Intentar corrección de 12 horas primero
+                diff_12h = diff + 43200
+                diff_24h = diff + 86400
+                # Si sumar 12h da un intervalo razonable (< 60 seg), usar esa
+                if 0 < diff_12h < 60:
+                    diff = diff_12h
+                else:
+                    diff = diff_24h
+            elapsed.append(elapsed[-1] + diff)
         else:
             elapsed.append(None)
     
@@ -73,18 +66,8 @@ def _convert_time_to_seconds(df):
     
     return df
 
-
 def read_all_heaters(data_dir):
-    """
-    Lee todos los archivos Excel en la carpeta data/ y los combina 
-    en un solo DataFrame con una columna heater_id.
-    
-    Args:
-        data_dir: ruta a la carpeta con los .xlsx
-    
-    Returns:
-        DataFrame combinado con columna heater_id
-    """
+    """Lee todos los Excel y los combina con columna heater_id."""
     xlsx_files = [f for f in os.listdir(data_dir) if f.endswith(".xlsx")]
     xlsx_files.sort()
     
@@ -104,17 +87,17 @@ def read_all_heaters(data_dir):
     combined = pd.concat(all_dfs, ignore_index=True)
     return combined
 
+
 def get_thermocouple_columns(df):
-    """Devuelve la lista de columnas que son termopares base (TC1, TC2, etc.)."""
-    import re
+    """Devuelve solo columnas TC con número (TC1, TC2, etc.)."""
     return [c for c in df.columns if re.match(r'^TC\d+$', c.strip())]
 
 
 def get_ts_columns(df):
-    """Devuelve la lista de columnas TS."""
+    """Devuelve columnas TS."""
     return [c for c in df.columns if c.startswith("TS")]
 
 
 def get_ot_columns(df):
-    """Devuelve la lista de columnas OT."""
+    """Devuelve columnas OT."""
     return [c for c in df.columns if c.startswith("OT")]

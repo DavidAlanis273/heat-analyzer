@@ -8,9 +8,8 @@
 
 # MAGIC %md
 # MAGIC # 03 - Detección de Anomalías
-# MAGIC Aplica Z-Score, IQR, Isolation Forest y detección de lecturas congeladas
-# MAGIC a cada termopar de cada calefactor.
-
+# MAGIC Detecta y contextualiza anomalías POR ARCHIVO y POR TERMOPAR.
+# MAGIC Clasifica si ocurrieron durante rampa de calentamiento o estado estable.
 
 # COMMAND ----------
 
@@ -30,11 +29,10 @@ from utils.detection import run_all_detection
 from utils.reader import get_thermocouple_columns
 from config.settings import (
     FEATURES_FILE, ANOMALIES_FILE, OUTPUT_DIR,
-    ZSCORE_THRESHOLD, IQR_MULTIPLIER, 
+    ZSCORE_THRESHOLD, IQR_MULTIPLIER,
     ISOLATION_FOREST_CONTAMINATION, FROZEN_WINDOW
 )
 
-# Parámetros de detección
 detection_settings = {
     'zscore_threshold': ZSCORE_THRESHOLD,
     'iqr_multiplier': IQR_MULTIPLIER,
@@ -54,16 +52,14 @@ print(f"Detection settings: {detection_settings}")
 features_path = os.path.join(repo_root, FEATURES_FILE)
 df = pd.read_csv(features_path)
 
-print(f"Datos cargados: {df.shape[0]} rows x {df.shape[1]} columns")
-print(f"Heaters: {df['heater_id'].unique()}")
-
 tc_columns = get_thermocouple_columns(df)
+print(f"Datos cargados: {df.shape[0]} rows x {df.shape[1]} columns")
 print(f"Thermocouples: {len(tc_columns)}")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 2: Correr detección de anomalías por heater y termopar
+# MAGIC ## Paso 2: Detectar anomalías por archivo y termopar
 
 # COMMAND ----------
 
@@ -72,120 +68,156 @@ all_anomalies = []
 for heater_id in df['heater_id'].unique():
     print(f"\n  Analyzing: {heater_id}")
     hdf = df[df['heater_id'] == heater_id].copy()
-    
     active_tcs = [tc for tc in tc_columns if hdf[tc].notna().any()]
-    heater_anomaly_count = 0
     
     for tc in active_tcs:
         results = run_all_detection(hdf, tc, detection_settings)
         results['heater_id'] = heater_id
         
-        tc_anomalies = results['anomaly_consensus'].sum()
-        heater_anomaly_count += tc_anomalies
+        # Clasificar fase: rampa vs estado estable
+        # Si rate_of_change promedio en una ventana es alto -> rampa
+        roc_col = f"{tc}_rate_of_change"
+        if roc_col in hdf.columns:
+            roc_rolling = hdf[roc_col].abs().rolling(window=30, min_periods=1).mean()
+            roc_threshold = roc_rolling.quantile(0.75)
+            results['phase'] = 'ramping'
+            stable_mask = hdf.loc[results.index, roc_col].abs().rolling(window=30, min_periods=1).mean() < roc_threshold
+            results.loc[stable_mask[stable_mask].index, 'phase'] = 'steady_state'
+        else:
+            results['phase'] = 'unknown'
         
-        # Solo guardar filas donde al menos un método detectó algo
         anomaly_rows = results[results['anomaly_count'] > 0]
         if len(anomaly_rows) > 0:
             all_anomalies.append(anomaly_rows)
     
-    print(f"    Active TCs: {len(active_tcs)} | Consensus anomalies: {heater_anomaly_count}")
+    heater_consensus = sum(r['anomaly_consensus'].sum() for r in all_anomalies if r['heater_id'].iloc[0] == heater_id) if all_anomalies else 0
+    print(f"    Active TCs: {len(active_tcs)}")
 
 df_anomalies = pd.concat(all_anomalies, ignore_index=True)
 print(f"\nTotal anomaly records: {len(df_anomalies)}")
+print(f"Consensus anomalies: {int(df_anomalies['anomaly_consensus'].sum())}")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 3: Resumen de anomalías por método
+# MAGIC ## Paso 3: Resumen de anomalías POR ARCHIVO
 
 # COMMAND ----------
 
-print("Anomalies detected by method:\n")
-
-methods = {
-    'Z-Score': 'anomaly_zscore',
-    'IQR': 'anomaly_iqr',
-    'Isolation Forest': 'anomaly_iforest',
-    'Frozen Readings': 'anomaly_frozen',
-    'Consensus (2+ methods)': 'anomaly_consensus'
-}
-
-for name, col in methods.items():
-    count = df_anomalies[col].sum()
-    print(f"  {name}: {int(count)} anomalies")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Paso 4: Anomalías por heater
-
-# COMMAND ----------
-
-print("Anomalies by heater:\n")
-
-for heater_id in df_anomalies['heater_id'].unique():
-    hdf = df_anomalies[df_anomalies['heater_id'] == heater_id]
-    consensus = hdf['anomaly_consensus'].sum()
-    zscore = hdf['anomaly_zscore'].sum()
-    iqr = hdf['anomaly_iqr'].sum()
-    iforest = hdf['anomaly_iforest'].sum()
-    frozen = hdf['anomaly_frozen'].sum()
-    tcs_affected = hdf[hdf['anomaly_consensus']]['thermocouple'].nunique()
+for heater_id in df['heater_id'].unique():
+    hdf_anom = df_anomalies[df_anomalies['heater_id'] == heater_id]
+    consensus = hdf_anom[hdf_anom['anomaly_consensus'] == True]
     
-    print(f"  {heater_id}:")
-    print(f"    Consensus: {int(consensus)} | Z-Score: {int(zscore)} | IQR: {int(iqr)} | iForest: {int(iforest)} | Frozen: {int(frozen)}")
-    print(f"    Thermocouples affected: {tcs_affected}")
-    print()
+    # Contar por fase
+    ramping_count = len(consensus[consensus['phase'] == 'ramping']) if 'phase' in consensus.columns else 0
+    steady_count = len(consensus[consensus['phase'] == 'steady_state']) if 'phase' in consensus.columns else 0
+    
+    print(f"\n{'='*65}")
+    print(f"  ANOMALY REPORT: {heater_id}")
+    print(f"{'='*65}")
+    print(f"  Total consensus anomalies: {len(consensus)}")
+    print(f"    During ramping phase:      {ramping_count} (expected — temperature changing rapidly)")
+    print(f"    During steady state:       {steady_count} (these need attention)")
+    print(f"  Thermocouples affected: {consensus['thermocouple'].nunique()}")
+    
+    print(f"\n  By method:")
+    print(f"    Z-Score:          {int(hdf_anom['anomaly_zscore'].sum())}")
+    print(f"    IQR:              {int(hdf_anom['anomaly_iqr'].sum())}")
+    print(f"    Isolation Forest: {int(hdf_anom['anomaly_iforest'].sum())}")
+    print(f"    Frozen Readings:  {int(hdf_anom['anomaly_frozen'].sum())}")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 5: Top anomalías más severas
+# MAGIC ## Paso 4: Detalle POR TERMOPAR — qué pasó y por qué
 
 # COMMAND ----------
 
-# Las anomalías detectadas por más métodos son las más confiables
+for heater_id in df['heater_id'].unique():
+    hdf = df[df['heater_id'] == heater_id]
+    hdf_anom = df_anomalies[df_anomalies['heater_id'] == heater_id]
+    consensus = hdf_anom[hdf_anom['anomaly_consensus'] == True]
+    
+    if len(consensus) == 0:
+        continue
+    
+    print(f"\n{'='*70}")
+    print(f"  THERMOCOUPLE DETAIL: {heater_id}")
+    print(f"{'='*70}")
+    
+    # Agrupar por TC
+    tc_summary = consensus.groupby('thermocouple').agg(
+        total_anomalies=('anomaly_consensus', 'sum'),
+        avg_temp=('temperature', 'mean'),
+        min_temp=('temperature', 'min'),
+        max_temp=('temperature', 'max')
+    ).sort_values('total_anomalies', ascending=False)
+    
+    for tc, row in tc_summary.iterrows():
+        tc_consensus = consensus[consensus['thermocouple'] == tc]
+        ramping = len(tc_consensus[tc_consensus['phase'] == 'ramping'])
+        steady = len(tc_consensus[tc_consensus['phase'] == 'steady_state'])
+        
+        # Obtener datos completos del TC para contexto
+        tc_full = hdf[tc].dropna()
+        tc_avg_full = tc_full.mean()
+        tc_max_full = tc_full.max()
+        
+        print(f"\n  {tc}:")
+        print(f"    Full test avg: {tc_avg_full:.1f}°C | Max: {tc_max_full:.1f}°C")
+        print(f"    Anomalies: {int(row['total_anomalies'])} total ({ramping} during ramping, {steady} during steady state)")
+        print(f"    Anomaly temp range: {row['min_temp']:.1f}°C to {row['max_temp']:.1f}°C")
+        
+        # Diagnóstico automático
+        if steady > ramping:
+            print(f"    ⚠ Most anomalies in steady state — possible sensor issue or process instability")
+        elif ramping > 0 and steady == 0:
+            print(f"    ✓ All anomalies during ramping — normal behavior during temperature changes")
+        
+        # Detectar si es un TC "frío" comparado con los demás
+        all_tc_maxes = [hdf[t].max() for t in tc_columns if t in hdf.columns and hdf[t].notna().any()]
+        avg_all_maxes = np.mean(all_tc_maxes)
+        if tc_max_full < avg_all_maxes * 0.5:
+            print(f"    ℹ This TC reached only {tc_max_full:.0f}°C while average max was {avg_all_maxes:.0f}°C — likely positioned far from heat source")
+        
+        # Detectar si casi no se movió
+        if tc_full.max() - tc_full.min() < 10:
+            print(f"    ℹ Temperature range was only {tc_full.max() - tc_full.min():.1f}°C — sensor in isolated/ambient zone")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Paso 5: Anomalías severas (3+ métodos coinciden)
+
+# COMMAND ----------
+
 severe = df_anomalies[df_anomalies['anomaly_count'] >= 3].copy()
-severe = severe.sort_values('anomaly_count', ascending=False)
 
-print(f"Severe anomalies (detected by 3+ methods): {len(severe)}\n")
-
-if len(severe) > 0:
-    for heater_id in severe['heater_id'].unique():
-        hsev = severe[severe['heater_id'] == heater_id]
-        print(f"  {heater_id}: {len(hsev)} severe anomalies")
-        
-        # Mostrar top 5 por heater
-        for _, row in hsev.head(5).iterrows():
-            print(f"    {row['thermocouple']} at {row['elapsed_seconds']}s: {row['temperature']:.2f}°C (detected by {int(row['anomaly_count'])} methods)")
-        
-        if len(hsev) > 5:
-            print(f"    ... and {len(hsev) - 5} more")
-        print()
-else:
-    print("  No severe anomalies found — all detections are from 1-2 methods only.")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Paso 6: Anomalías por termopar (¿cuáles sensores tienen más problemas?)
-
-# COMMAND ----------
-
-tc_anomaly_summary = df_anomalies[df_anomalies['anomaly_consensus']].groupby('thermocouple').agg(
-    total_anomalies=('anomaly_consensus', 'sum'),
-    heaters_affected=('heater_id', 'nunique'),
-    avg_temp=('temperature', 'mean')
-).sort_values('total_anomalies', ascending=False)
-
-print("Thermocouples with most consensus anomalies:\n")
-for tc, row in tc_anomaly_summary.head(10).iterrows():
-    print(f"  {tc}: {int(row['total_anomalies'])} anomalies across {int(row['heaters_affected'])} heater(s) | Avg temp: {row['avg_temp']:.1f}°C")
+for heater_id in df['heater_id'].unique():
+    hsev = severe[severe['heater_id'] == heater_id]
+    
+    if len(hsev) == 0:
+        print(f"\n  {heater_id}: No severe anomalies (good)")
+        continue
+    
+    steady_severe = hsev[hsev['phase'] == 'steady_state']
+    
+    print(f"\n{'='*65}")
+    print(f"  SEVERE ANOMALIES: {heater_id}")
+    print(f"{'='*65}")
+    print(f"  Total severe (3+ methods): {len(hsev)}")
+    print(f"  During steady state: {len(steady_severe)} ← these matter most")
+    
+    if len(steady_severe) > 0:
+        print(f"\n  Steady state severe anomalies:")
+        for tc in steady_severe['thermocouple'].unique():
+            tc_sev = steady_severe[steady_severe['thermocouple'] == tc]
+            print(f"    {tc}: {len(tc_sev)} readings | Temp range: {tc_sev['temperature'].min():.1f}°C to {tc_sev['temperature'].max():.1f}°C")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 7: Guardar resultados
+# MAGIC ## Paso 6: Guardar resultados
 
 # COMMAND ----------
 
@@ -195,31 +227,15 @@ os.makedirs(output_path, exist_ok=True)
 anomalies_path = os.path.join(repo_root, ANOMALIES_FILE)
 df_anomalies.to_csv(anomalies_path, index=False)
 
-print(f"Anomalies saved: {anomalies_path}")
-print(f"  Total records: {len(df_anomalies)}")
-print(f"  Consensus anomalies: {int(df_anomalies['anomaly_consensus'].sum())}")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Resumen ejecutivo
-
-# COMMAND ----------
-
-total_readings = df.shape[0] * len(tc_columns)
+total_readings = sum(len(df[df['heater_id'] == h]) * len([tc for tc in tc_columns if df[df['heater_id'] == h][tc].notna().any()]) for h in df['heater_id'].unique())
 total_consensus = int(df_anomalies['anomaly_consensus'].sum())
-pct = (total_consensus / total_readings) * 100 if total_readings > 0 else 0
 
-print("=" * 60)
-print("   ANOMALY DETECTION - EXECUTIVE SUMMARY")
-print("=" * 60)
-print(f"   Total readings analyzed:    {total_readings:,}")
-print(f"   Consensus anomalies found:  {total_consensus:,} ({pct:.2f}%)")
-print(f"   Heaters analyzed:           {df['heater_id'].nunique()}")
-print(f"   Thermocouples per heater:   {len(tc_columns)}")
-print()
-print("   By method:")
-for name, col in methods.items():
-    count = int(df_anomalies[col].sum())
-    print(f"     {name}: {count:,}")
-print("=" * 60)
+print(f"Anomalies saved: {anomalies_path}")
+print(f"\n{'='*60}")
+print(f"  SUMMARY")
+print(f"{'='*60}")
+print(f"  Total readings analyzed: {total_readings:,}")
+print(f"  Consensus anomalies:     {total_consensus:,} ({total_consensus/max(total_readings,1)*100:.2f}%)")
+print(f"  Heaters analyzed:        {df['heater_id'].nunique()}")
+print(f"  Thermocouples:           {len(tc_columns)} per test")
+print(f"{'='*60}")
