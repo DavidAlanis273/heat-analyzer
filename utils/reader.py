@@ -104,10 +104,10 @@ def read_all_heaters(data_dir):
     combined = pd.concat(all_dfs, ignore_index=True)
     return combined
 
-
 def get_thermocouple_columns(df):
-    """Devuelve la lista de columnas que son termopares (TC*)."""
-    return [c for c in df.columns if c.startswith("TC") and not "PSwitch" in c]
+    """Devuelve la lista de columnas que son termopares base (TC1, TC2, etc.)."""
+    import re
+    return [c for c in df.columns if re.match(r'^TC\d+$', c.strip())]
 
 
 def get_ts_columns(df):

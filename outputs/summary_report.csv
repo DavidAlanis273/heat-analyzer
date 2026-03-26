@@ -1,0 +1,4 @@
+heater_id,duration_min,num_readings,active_thermocouples,avg_max_temp_c,avg_heating_rate_c_per_min,avg_stability,total_consensus_anomalies,tcs_with_anomalies,recommendations
+Manometer Tree 150 & 155 SP-Tstat Open,1117.2,4768,25,185.1,0.1265,3.3051,5215,25,"High variability in steady state — review temperature control settings | High anomaly count — investigate sensor placement and calibration | Anomalies across most thermocouples — possible system-wide issue | Low temperature TCs (TC18, TC22, TC25) — may be far from heat source or disconnected"
+"Manometer Tree 50, 100 & 150 SP",1106.1,4633,25,125.3,0.086,0.2573,663,3,"Low temperature TCs (TC18, TC22, TC25) — may be far from heat source or disconnected"
+Test Tstat open,28.8,347,25,176.8,2.1414,0.4028,272,16,"Low temperature TCs (TC6, TC10, TC18, TC22, TC25) — may be far from heat source or disconnected"

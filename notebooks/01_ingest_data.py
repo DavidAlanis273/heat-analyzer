@@ -2,7 +2,8 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install openpyxl --quiet
+# MAGIC 
+%pip install openpyxl --quiet
 
 # COMMAND ----------
 
@@ -17,7 +18,7 @@ import os
 import sys
 import pandas as pd
 
-repo_root = '/Workspace/Users/david.alanis@watlow.com/heater-analyzer'
+repo_root = '/Workspace/Users/david.alanis@watlow.com/heat-analyzer'
 sys.path.insert(0, repo_root)
 
 from utils.reader import read_all_heaters, get_thermocouple_columns, get_ts_columns, get_ot_columns
