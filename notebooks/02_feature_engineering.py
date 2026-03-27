@@ -18,9 +18,12 @@ repo_root = '/Workspace/Users/david.alanis@watlow.com/heat-analyzer'
 sys.path.insert(0, repo_root)
 
 import utils.reader
+import utils.features
 importlib.reload(utils.reader)
+importlib.reload(utils.features)
 
 from utils.features import add_rolling_features, compute_heater_profiles
+from utils.features import detect_set_points, compute_setpoint_averages, compute_setpoint_deltas
 from utils.reader import get_thermocouple_columns
 from config.settings import CLEAN_DATA_FILE, FEATURES_FILE, PROFILES_FILE, OUTPUT_DIR, ROLLING_WINDOW
 
@@ -29,7 +32,7 @@ print(f"Repo root: {repo_root}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 1: Cargar datos limpios
+# MAGIC ## Cargar datos limpios
 
 # COMMAND ----------
 
@@ -44,8 +47,7 @@ print(f"Heaters: {list(df['heater_id'].unique())}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 2: Resumen individual por archivo
-# MAGIC Cada archivo es una prueba independiente. Los resultados se muestran por separado.
+# MAGIC ## Resumen individual por archivo
 
 # COMMAND ----------
 
@@ -69,7 +71,6 @@ for heater_id in df['heater_id'].unique():
     if missing_tcs:
         print(f"  Missing TCs:  {missing_tcs} (no data)")
     
-    # Rango de temperatura por TC
     print(f"\n  Temperature summary per thermocouple:")
     print(f"  {'TC':<6} {'Start':>8} {'End':>8} {'Min':>8} {'Max':>8} {'Avg':>8} {'Range':>8}")
     print(f"  {'─'*54}")
@@ -81,7 +82,7 @@ for heater_id in df['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 3: Agregar rolling features
+# MAGIC ## Agregar rolling features
 
 # COMMAND ----------
 
@@ -104,7 +105,7 @@ print(f"\nDataFrame with features: {df_features.shape[0]} rows x {df_features.sh
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 4: Perfiles detallados por termopar, por archivo
+# MAGIC ## Perfiles detallados por termopar, por archivo
 
 # COMMAND ----------
 
@@ -120,7 +121,6 @@ print(f"Total profiles: {len(df_profiles)}")
 
 # COMMAND ----------
 
-# Mostrar perfiles organizados por archivo
 for heater_id in df_profiles['heater_id'].unique():
     hp = df_profiles[df_profiles['heater_id'] == heater_id].copy()
     hp = hp.sort_values('temp_max', ascending=False)
@@ -137,7 +137,6 @@ for heater_id in df_profiles['heater_id'].unique():
         over_str = f"{row['overshoot']:.1f}°C"
         print(f"  {row['thermocouple']:<6} {row['temp_max']:>6.1f} {row['temp_mean']:>7.1f} {rate_str:>10} {stab_str:>10} {over_str:>10}")
     
-    # Identificar termopares con comportamiento especial
     avg_max = hp['temp_max'].mean()
     hot_tcs = hp[hp['temp_max'] > avg_max * 1.3]['thermocouple'].tolist()
     cold_tcs = hp[hp['temp_max'] < avg_max * 0.5]['thermocouple'].tolist()
@@ -155,10 +154,121 @@ for heater_id in df_profiles['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 5: Guardar resultados
+# MAGIC ## Set Point Analysis
+# MAGIC Detecta automáticamente las fases de estado estable y calcula
+# MAGIC promedios y deltas por termopar — lo mismo que las tablas manuales del Excel.
 
 # COMMAND ----------
 
+for heater_id in df['heater_id'].unique():
+    hdf = df[df['heater_id'] == heater_id].copy().reset_index(drop=True)
+    active_tcs = [tc for tc in tc_columns if hdf[tc].notna().any()]
+    
+    set_points = detect_set_points(hdf, active_tcs)
+    
+    if not set_points:
+        print(f"\n{heater_id}: No stable set points detected (may be a continuous ramp test)")
+        continue
+    
+    print(f"\n{'='*70}")
+    print(f"  SET POINT ANALYSIS: {heater_id}")
+    print(f"{'='*70}")
+    
+    print(f"\n  Detected {len(set_points)} set point phase(s):")
+    for sp in set_points:
+        print(f"    ~{sp['set_point_approx']}°C | {sp['duration_min']:.1f} min stable | {sp['num_readings']} readings")
+    
+    avg_table = compute_setpoint_averages(hdf, active_tcs, set_points)
+    delta_table = compute_setpoint_deltas(avg_table)
+    
+    print(f"\n  AVERAGE TEMPERATURE PER SET POINT:")
+    print(f"  {'SP':>6}", end="")
+    for tc in active_tcs:
+        print(f" {tc:>7}", end="")
+    print()
+    print(f"  {'─'* (7 + 8*len(active_tcs))}")
+    
+    for _, row in avg_table.iterrows():
+        print(f"  {row['set_point']:>5}°", end="")
+        for tc in active_tcs:
+            val = row.get(tc)
+            if val is not None:
+                print(f" {val:>6.1f}°", end="")
+            else:
+                print(f"    N/A", end="")
+        print()
+    
+    print(f"\n  DELTA FROM SET POINT (positive = above, negative = below):")
+    print(f"  {'SP':>6}", end="")
+    for tc in active_tcs:
+        print(f" {tc:>7}", end="")
+    print()
+    print(f"  {'─'* (7 + 8*len(active_tcs))}")
+    
+    for _, row in delta_table.iterrows():
+        print(f"  {row['set_point']:>5}°", end="")
+        for tc in active_tcs:
+            val = row.get(tc)
+            if val is not None:
+                sign = "+" if val > 0 else ""
+                print(f" {sign}{val:>5.1f}°", end="")
+            else:
+                print(f"    N/A", end="")
+        print()
+    
+    print(f"\n  OBSERVATIONS:")
+    for _, row in delta_table.iterrows():
+        sp = row['set_point']
+        deltas = {tc: row.get(tc) for tc in active_tcs if row.get(tc) is not None}
+        
+        hot = [tc for tc, d in deltas.items() if d > 15]
+        cold = [tc for tc, d in deltas.items() if d < -15]
+        
+        if hot:
+            print(f"    At SP {sp}°C: {', '.join(hot)} running HOT (>{sp+15}°C)")
+        if cold:
+            print(f"    At SP {sp}°C: {', '.join(cold)} running COLD (<{sp-15}°C)")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Guardar resultados
+
+# COMMAND ----------
+
+# Guardar tablas de set points
+all_avg_tables = []
+all_delta_tables = []
+
+for heater_id in df['heater_id'].unique():
+    hdf = df[df['heater_id'] == heater_id].copy().reset_index(drop=True)
+    active_tcs = [tc for tc in tc_columns if hdf[tc].notna().any()]
+    set_points = detect_set_points(hdf, active_tcs)
+    
+    if set_points:
+        avg_table = compute_setpoint_averages(hdf, active_tcs, set_points)
+        avg_table.insert(0, 'heater_id', heater_id)
+        all_avg_tables.append(avg_table)
+        
+        delta_table = compute_setpoint_deltas(compute_setpoint_averages(hdf, active_tcs, set_points))
+        delta_table.insert(0, 'heater_id', heater_id)
+        all_delta_tables.append(delta_table)
+
+if all_avg_tables:
+    df_avg = pd.concat(all_avg_tables, ignore_index=True)
+    avg_path = os.path.join(repo_root, OUTPUT_DIR, "setpoint_averages.csv")
+    df_avg.to_csv(avg_path, index=False)
+    print(f"Set point averages saved: {avg_path}")
+
+if all_delta_tables:
+    df_delta = pd.concat(all_delta_tables, ignore_index=True)
+    delta_path = os.path.join(repo_root, OUTPUT_DIR, "setpoint_deltas.csv")
+    df_delta.to_csv(delta_path, index=False)
+    print(f"Set point deltas saved: {delta_path}")
+
+# COMMAND ----------
+
+# Guardar features y profiles
 output_path = os.path.join(repo_root, OUTPUT_DIR)
 os.makedirs(output_path, exist_ok=True)
 

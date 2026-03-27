@@ -114,3 +114,83 @@ def compute_heater_profiles(df, tc_columns, heater_id):
                 profiles.append(profile)
     
     return pd.DataFrame(profiles)
+
+def detect_set_points(df, tc_columns, window=60, roc_threshold=0.05):
+    """
+    Detecta automáticamente las fases de estado estable (set points)
+    buscando periodos donde la tasa de cambio promedio es cercana a cero.
+    """
+    active_tcs = [tc for tc in tc_columns if tc in df.columns and df[tc].notna().any()]
+    avg_temp = df[active_tcs].mean(axis=1)
+    
+    roc = avg_temp.diff().abs().rolling(window=window, min_periods=1).mean()
+    stable = roc < roc_threshold
+    groups = (stable != stable.shift()).cumsum()
+    
+    set_points = []
+    for group_id in groups[stable].unique():
+        mask = (groups == group_id) & stable
+        if mask.sum() < window:
+            continue
+        
+        group_temps = avg_temp[mask]
+        group_elapsed = df.loc[mask, 'elapsed_seconds']
+        
+        sp_value = round(group_temps.mean())
+        
+        if set_points and abs(sp_value - set_points[-1]['set_point_approx']) < 10:
+            continue
+        
+        set_points.append({
+            'set_point_approx': sp_value,
+            'start_seconds': group_elapsed.iloc[0],
+            'end_seconds': group_elapsed.iloc[-1],
+            'duration_min': (group_elapsed.iloc[-1] - group_elapsed.iloc[0]) / 60,
+            'start_idx': mask.idxmax(),
+            'end_idx': mask[::-1].idxmax(),
+            'num_readings': mask.sum()
+        })
+    
+    return set_points
+
+
+def compute_setpoint_averages(df, tc_columns, set_points):
+    """
+    Calcula el promedio de cada TC durante cada fase de set point.
+    """
+    rows = []
+    for sp in set_points:
+        mask = (df['elapsed_seconds'] >= sp['start_seconds']) & \
+               (df['elapsed_seconds'] <= sp['end_seconds'])
+        sp_data = df[mask]
+        
+        row = {'set_point': sp['set_point_approx']}
+        for tc in tc_columns:
+            if tc in sp_data.columns and sp_data[tc].notna().any():
+                row[tc] = round(sp_data[tc].mean(), 2)
+            else:
+                row[tc] = None
+        rows.append(row)
+    
+    return pd.DataFrame(rows)
+
+
+def compute_setpoint_deltas(avg_table):
+    """
+    Calcula la diferencia (delta) entre el promedio de cada TC y el set point.
+    """
+    delta_rows = []
+    for _, row in avg_table.iterrows():
+        sp = row['set_point']
+        delta_row = {'set_point': sp}
+        for col in avg_table.columns:
+            if col != 'set_point' and row[col] is not None:
+                delta_row[col] = round(row[col] - sp, 2)
+        delta_rows.append(delta_row)
+    
+    return pd.DataFrame(delta_rows)
+
+    
+
+
+    
