@@ -353,6 +353,31 @@ print(f"Ramp up times saved: {ramp_path}")
 
 # COMMAND ----------
 
+# COMMAND ----------
+
+# Guardar pass/fail como CSV
+all_pf_tables = []
+
+for heater_id in df['heater_id'].unique():
+    hdf = df[df['heater_id'] == heater_id].copy().reset_index(drop=True)
+    active_tcs = [tc for tc in tc_columns if hdf[tc].notna().any()]
+    set_points = detect_set_points(hdf, active_tcs)
+    
+    if set_points:
+        avg_table = compute_setpoint_averages(hdf, active_tcs, set_points)
+        delta_table = compute_setpoint_deltas(avg_table)
+        pf_table = compute_pass_fail(avg_table, delta_table, tolerance=SETPOINT_TOLERANCE)
+        pf_table.insert(0, 'heater_id', heater_id)
+        all_pf_tables.append(pf_table)
+
+if all_pf_tables:
+    df_pf = pd.concat(all_pf_tables, ignore_index=True)
+    pf_path = os.path.join(repo_root, OUTPUT_DIR, "pass_fail_results.csv")
+    df_pf.to_csv(pf_path, index=False)
+    print(f"Pass/fail results saved: {pf_path}")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Guardar resultados
 
