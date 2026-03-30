@@ -7,7 +7,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # 04 - Reporte Final
+# MAGIC # 04 - Final Report
 # MAGIC Genera visualizaciones y reporte detallado por archivo y por termopar.
 
 # COMMAND ----------
@@ -37,7 +37,7 @@ print(f"Repo root: {repo_root}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 1: Cargar datos
+# MAGIC ## Step 1: Load data
 
 # COMMAND ----------
 
@@ -55,7 +55,7 @@ print(f"Thermocouples: {len(tc_columns)}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 2: Gráfica completa de TODOS los termopares por archivo
+# MAGIC ## Step 2: Complete chart of ALL Thermocouples by file
 # MAGIC Una gráfica por archivo mostrando todos los TC para ver la distribución de calor.
 
 # COMMAND ----------
@@ -85,7 +85,7 @@ for heater_id in df_clean['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 3: Gráficas individuales por TC con anomalías marcadas
+# MAGIC ## Step 3: Individual TC chart with anomalies marked
 # MAGIC Para cada archivo, muestra los 4 TC más interesantes: el más caliente,
 # MAGIC el más frío, el más inestable, y el que tiene más anomalías.
 
@@ -161,7 +161,7 @@ for heater_id in df_clean['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 4: Mapa de calor — temperatura máxima por TC y archivo
+# MAGIC ## Step 4: Heat Map - Max temperature by TC and file
 
 # COMMAND ----------
 
@@ -194,7 +194,7 @@ print("Heatmap saved")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 5: Gráfica de anomalías — por método y por archivo
+# MAGIC ## Paso 5: Step 5: Anomalies chart - by method and by file
 
 # COMMAND ----------
 
@@ -227,7 +227,7 @@ print("Chart saved")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 6: Reporte final por archivo — lo que el ingeniero necesita ver
+# MAGIC ## Paso 6: Step 5: Final report by file - what engineers ned to see
 
 # COMMAND ----------
 
@@ -320,7 +320,7 @@ print(f"\n{'='*75}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 7: Guardar reporte
+# MAGIC ## Step 7: Save report as CSV
 
 # COMMAND ----------
 

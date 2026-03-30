@@ -7,7 +7,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # 01 - Ingesta de Datos
+# MAGIC # 01 - Data Ingestion
 # MAGIC Lee los archivos Excel de pruebas de calefactores, estandariza el formato
 # MAGIC y genera un CSV limpio combinado.
 
@@ -28,7 +28,7 @@ print(f"Repo root: {repo_root}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 1: Leer todos los archivos Excel
+# MAGIC ## Step 1: Read all excel files
 
 # COMMAND ----------
 
@@ -60,7 +60,7 @@ else:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 2: Explorar los datos
+# MAGIC ## Step 2: Explore data
 
 # COMMAND ----------
 
@@ -87,7 +87,7 @@ for heater_id in df['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 3: Limpiar datos
+# MAGIC ## Step 3: clean data
 
 # COMMAND ----------
 
@@ -109,7 +109,7 @@ print(f"\nDataFrame shape after cleaning: {df.shape}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 4: Guardar CSV limpio
+# MAGIC ## Step 4: save clean CSV
 
 # COMMAND ----------
 
@@ -126,7 +126,7 @@ print(f"Total columns: {len(df.columns)}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Verificación final
+# MAGIC ## Final verification
 
 # COMMAND ----------
 

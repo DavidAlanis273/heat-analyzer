@@ -32,7 +32,7 @@ print(f"Repo root: {repo_root}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Cargar datos limpios
+# MAGIC ## Load clean data
 
 # COMMAND ----------
 
@@ -47,7 +47,7 @@ print(f"Heaters: {list(df['heater_id'].unique())}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Resumen individual por archivo
+# MAGIC ## Summary per file
 
 # COMMAND ----------
 
@@ -82,7 +82,7 @@ for heater_id in df['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Agregar rolling features
+# MAGIC ## Add rolling features
 
 # COMMAND ----------
 
@@ -105,7 +105,7 @@ print(f"\nDataFrame with features: {df_features.shape[0]} rows x {df_features.sh
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Perfiles detallados por termopar, por archivo
+# MAGIC ## Detailed profiles by Thermocouples, by files
 
 # COMMAND ----------
 

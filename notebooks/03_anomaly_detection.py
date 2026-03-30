@@ -7,7 +7,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # 03 - Detección de Anomalías
+# MAGIC # 03 - Anomalie detection
 # MAGIC Detecta y contextualiza anomalías POR ARCHIVO y POR TERMOPAR.
 # MAGIC Clasifica si ocurrieron durante rampa de calentamiento o estado estable.
 
@@ -45,7 +45,7 @@ print(f"Detection settings: {detection_settings}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 1: Cargar datos con features
+# MAGIC ## Step 1: Load data with features
 
 # COMMAND ----------
 
@@ -59,7 +59,7 @@ print(f"Thermocouples: {len(tc_columns)}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 2: Detectar anomalías por archivo y termopar
+# MAGIC ## Step 2: Detect anomalies by file and thermocouple
 
 # COMMAND ----------
 
@@ -100,7 +100,7 @@ print(f"Consensus anomalies: {int(df_anomalies['anomaly_consensus'].sum())}")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 3: Resumen de anomalías POR ARCHIVO
+# MAGIC ## Step 3: Anomalie summary by file
 
 # COMMAND ----------
 
@@ -129,7 +129,7 @@ for heater_id in df['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 4: Detalle POR TERMOPAR — qué pasó y por qué
+# MAGIC ## Step 4: Thermocouple detail - what happened and why 
 
 # COMMAND ----------
 
@@ -187,7 +187,7 @@ for heater_id in df['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 5: Anomalías severas (3+ métodos coinciden)
+# MAGIC ## Step 5: Severe anomalies (3+ methods agree)
 
 # COMMAND ----------
 
@@ -217,7 +217,7 @@ for heater_id in df['heater_id'].unique():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 6: Guardar resultados
+# MAGIC ## Step 6: Save results
 
 # COMMAND ----------
 

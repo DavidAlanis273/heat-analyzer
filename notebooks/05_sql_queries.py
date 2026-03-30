@@ -16,7 +16,7 @@ repo_root = '/Workspace/Users/david.alanis@watlow.com/heat-analyzer'
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 1: Cargar CSVs y registrar como vistas SQL
+# MAGIC ## Step 1: Load CSVs and register as SQL views
 
 # COMMAND ----------
 
@@ -47,7 +47,7 @@ print("SQL views registered successfully")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 1: Resumen general por prueba
+# MAGIC ### Query 1: General summary by test
 
 # COMMAND ----------
 
@@ -65,8 +65,8 @@ ORDER BY total_readings DESC
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 2: Perfil completo de cada termopar por prueba
-
+# MAGIC ### Query 2: Complete profile of each thermocouple test
+ 
 # COMMAND ----------
 
 display(spark.sql("""
@@ -88,7 +88,7 @@ ORDER BY heater_id, temp_max DESC
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 3: Termopares con overshoot mayor a 5°C
+# MAGIC ### Query 3: Thermocouples with an overshoot greater than 5°C
 
 # COMMAND ----------
 
@@ -107,7 +107,7 @@ ORDER BY overshoot DESC
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 4: Termopares más inestables (top 10)
+# MAGIC ### Query 4: Most inestable thermocouples (top 10)
 
 # COMMAND ----------
 
@@ -126,7 +126,7 @@ LIMIT 10
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 5: Termopares fríos (menos del 50% de la temp máxima promedio)
+# MAGIC ### Query 5: Cold Thermocouples (less than 50% of the average maximum temperature)
 
 # COMMAND ----------
 
@@ -151,7 +151,7 @@ ORDER BY pct_of_avg ASC
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 6: Resumen de anomalías por prueba y termopar
+# MAGIC ### Query 6: Anomailes summary by test and thermocouple
 
 # COMMAND ----------
 
@@ -174,7 +174,7 @@ ORDER BY consensus_anomalies DESC
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 7: Anomalías severas (3+ métodos)
+# MAGIC ### Query 7: Severe anomalies (3+ methods)
 
 # COMMAND ----------
 
@@ -195,7 +195,7 @@ LIMIT 20
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 8: Anomalías en estado estable (las que importan)
+# MAGIC ### Query 8: Anomalies in steady state (the ones that matter)
 
 # COMMAND ----------
 
@@ -216,7 +216,7 @@ ORDER BY steady_state_anomalies DESC
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 9: Promedios por set point
+# MAGIC ### Query 9: Set point averages
 
 # COMMAND ----------
 
@@ -225,7 +225,7 @@ display(spark.sql("SELECT * FROM setpoint_averages ORDER BY heater_id, set_point
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 10: Deltas por set point
+# MAGIC ### Query 10: Deltas per set point
 
 # COMMAND ----------
 
@@ -234,7 +234,7 @@ display(spark.sql("SELECT * FROM setpoint_deltas ORDER BY heater_id, set_point")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 11: Un TC específico en todas las pruebas (cambia TC7 por el que quieras)
+# MAGIC ### Query 11: A specific TC in all tests (replace TC7 with whichever one you want)
 
 # COMMAND ----------
 
@@ -255,7 +255,7 @@ ORDER BY heater_id
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Query 12: Top 5 termopares más rápidos por prueba
+# MAGIC ### Query 12: Top 5 fastest Thermocouples bases on testings
 
 # COMMAND ----------
 
