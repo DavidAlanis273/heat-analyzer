@@ -190,6 +190,88 @@ def compute_setpoint_deltas(avg_table):
     
     return pd.DataFrame(delta_rows)
 
+
+def compute_pass_fail(avg_table, delta_table, tolerance=10.0):
+    """
+    Evalúa si cada termopar pasa o falla contra la especificación.
+    Pasa si está dentro de +/- tolerance del set point.
+    
+    Returns:
+        DataFrame con Pass/Fail por TC por set point
+    """
+    results = []
+    
+    for _, row in delta_table.iterrows():
+        sp = row['set_point']
+        result_row = {'set_point': sp}
+        pass_count = 0
+        fail_count = 0
+        
+        for col in delta_table.columns:
+            if col == 'set_point' or col == 'heater_id':
+                continue
+            val = row.get(col)
+            if val is not None and not pd.isna(val):
+                if abs(val) <= tolerance:
+                    result_row[col] = 'PASS'
+                    pass_count += 1
+                else:
+                    result_row[col] = f'FAIL ({val:+.1f}°)'
+                    fail_count += 1
+        
+        result_row['total_pass'] = pass_count
+        result_row['total_fail'] = fail_count
+        result_row['pass_rate'] = round(pass_count / max(pass_count + fail_count, 1) * 100, 1)
+        results.append(result_row)
+    
+    return pd.DataFrame(results)
+
+
+def compute_ramp_up_time(df, tc_columns, targets, elapsed_col='elapsed_seconds'):
+    """
+    Calcula cuánto tiempo tarda cada termopar en alcanzar cada temperatura objetivo.
+    
+    Args:
+        df: DataFrame de un solo heater
+        tc_columns: lista de columnas TC
+        targets: lista de temperaturas objetivo [50, 100, 150, 200]
+        elapsed_col: columna de tiempo
+    
+    Returns:
+        DataFrame con tiempo en minutos para alcanzar cada target
+    """
+    results = []
+    
+    for tc in tc_columns:
+        if tc not in df.columns or df[tc].isna().all():
+            continue
+        
+        series = df[tc].dropna()
+        elapsed = df.loc[series.index, elapsed_col]
+        start_temp = series.iloc[0]
+        start_time = elapsed.iloc[0]
+        
+        row = {'thermocouple': tc, 'start_temp': round(start_temp, 1)}
+        
+        for target in targets:
+            # Solo calcular si el target está por encima de la temperatura inicial
+            if target <= start_temp:
+                row[f'time_to_{target}C_min'] = 'already above'
+                continue
+            
+            # Buscar la primera lectura que alcanza o supera el target
+            reached = series[series >= target]
+            
+            if len(reached) > 0:
+                first_idx = reached.index[0]
+                time_to_reach = (elapsed.loc[first_idx] - start_time) / 60
+                row[f'time_to_{target}C_min'] = round(time_to_reach, 1)
+            else:
+                row[f'time_to_{target}C_min'] = 'never reached'
+        
+        results.append(row)
+    
+    return pd.DataFrame(results)
     
 
 

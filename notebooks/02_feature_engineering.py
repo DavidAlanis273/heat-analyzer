@@ -231,6 +231,128 @@ for heater_id in df['heater_id'].unique():
 
 # COMMAND ----------
 
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Pass/Fail Analysis
+# MAGIC Evalúa cada termopar contra la especificación de ±10°C del set point.
+
+# COMMAND ----------
+
+from utils.features import compute_pass_fail
+from config.settings import SETPOINT_TOLERANCE
+
+for heater_id in df['heater_id'].unique():
+    hdf = df[df['heater_id'] == heater_id].copy().reset_index(drop=True)
+    active_tcs = [tc for tc in tc_columns if hdf[tc].notna().any()]
+    set_points = detect_set_points(hdf, active_tcs)
+    
+    if not set_points:
+        continue
+    
+    avg_table = compute_setpoint_averages(hdf, active_tcs, set_points)
+    delta_table = compute_setpoint_deltas(avg_table)
+    pf_table = compute_pass_fail(avg_table, delta_table, tolerance=SETPOINT_TOLERANCE)
+    
+    print(f"\n{'='*70}")
+    print(f"  PASS/FAIL ANALYSIS: {heater_id}")
+    print(f"  Tolerance: ±{SETPOINT_TOLERANCE}°C from set point")
+    print(f"{'='*70}")
+    
+    for _, row in pf_table.iterrows():
+        sp = row['set_point']
+        passed = row['total_pass']
+        failed = row['total_fail']
+        rate = row['pass_rate']
+        
+        status = "✓ PASS" if failed == 0 else "✗ FAIL"
+        print(f"\n  Set Point {sp}°C: {status} — {passed} pass, {failed} fail ({rate}% pass rate)")
+        
+        # Mostrar los que fallaron
+        fails = []
+        for tc in active_tcs:
+            val = row.get(tc)
+            if val is not None and isinstance(val, str) and 'FAIL' in val:
+                fails.append(f"    {tc}: {val}")
+        
+        if fails:
+            print(f"  Failed thermocouples:")
+            for f in fails:
+                print(f)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Time to Ramp Up
+# MAGIC Cuánto tarda cada termopar en alcanzar las temperaturas objetivo.
+
+# COMMAND ----------
+
+from utils.features import compute_ramp_up_time
+from config.settings import RAMP_TARGETS
+
+for heater_id in df['heater_id'].unique():
+    hdf = df[df['heater_id'] == heater_id].copy().reset_index(drop=True)
+    active_tcs = [tc for tc in tc_columns if hdf[tc].notna().any()]
+    
+    ramp_table = compute_ramp_up_time(hdf, active_tcs, RAMP_TARGETS)
+    
+    print(f"\n{'='*70}")
+    print(f"  TIME TO RAMP UP: {heater_id}")
+    print(f"{'='*70}")
+    
+    # Header
+    header = f"  {'TC':<6} {'Start':>7}"
+    for target in RAMP_TARGETS:
+        header += f" {'→'+str(target)+'°C':>12}"
+    print(header)
+    print(f"  {'─'* (8 + 13*len(RAMP_TARGETS))}")
+    
+    for _, row in ramp_table.iterrows():
+        line = f"  {row['thermocouple']:<6} {row['start_temp']:>6.1f}°"
+        for target in RAMP_TARGETS:
+            col = f'time_to_{target}C_min'
+            val = row.get(col)
+            if isinstance(val, str):
+                line += f" {val:>12}"
+            else:
+                line += f" {val:>9.1f} min"
+        print(line)
+    
+    # Resumen: el más rápido y más lento en llegar a cada target
+    print(f"\n  Summary:")
+    for target in RAMP_TARGETS:
+        col = f'time_to_{target}C_min'
+        numeric = ramp_table[ramp_table[col].apply(lambda x: isinstance(x, (int, float)))][col]
+        
+        if len(numeric) > 0:
+            fastest_idx = numeric.idxmin()
+            slowest_idx = numeric.idxmax()
+            fastest_tc = ramp_table.loc[fastest_idx, 'thermocouple']
+            slowest_tc = ramp_table.loc[slowest_idx, 'thermocouple']
+            fastest_time = numeric.min()
+            slowest_time = numeric.max()
+            print(f"    To {target}°C: Fastest = {fastest_tc} ({fastest_time:.1f} min) | Slowest = {slowest_tc} ({slowest_time:.1f} min)")
+
+# COMMAND ----------
+
+# Guardar ramp up times como CSV
+all_ramp_tables = []
+
+for heater_id in df['heater_id'].unique():
+    hdf = df[df['heater_id'] == heater_id].copy().reset_index(drop=True)
+    active_tcs = [tc for tc in tc_columns if hdf[tc].notna().any()]
+    ramp_table = compute_ramp_up_time(hdf, active_tcs, RAMP_TARGETS)
+    ramp_table.insert(0, 'heater_id', heater_id)
+    all_ramp_tables.append(ramp_table)
+
+df_ramp = pd.concat(all_ramp_tables, ignore_index=True)
+ramp_path = os.path.join(repo_root, OUTPUT_DIR, "ramp_up_times.csv")
+df_ramp.to_csv(ramp_path, index=False)
+print(f"Ramp up times saved: {ramp_path}")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Guardar resultados
 

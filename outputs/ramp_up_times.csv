@@ -1,0 +1,76 @@
+heater_id,thermocouple,start_temp,time_to_50C_min,time_to_100C_min,time_to_150C_min,time_to_200C_min
+Manometer Tree 150 & 155 SP-Tstat Open,TC1,26.0,1.1,2.8,5.0,307.2
+Manometer Tree 150 & 155 SP-Tstat Open,TC2,25.5,2.4,9.7,304.0,318.8
+Manometer Tree 150 & 155 SP-Tstat Open,TC3,25.8,2.2,6.8,177.7,312.9
+Manometer Tree 150 & 155 SP-Tstat Open,TC4,26.4,1.4,4.1,304.1,309.1
+Manometer Tree 150 & 155 SP-Tstat Open,TC5,26.5,0.8,2.9,304.3,353.8
+Manometer Tree 150 & 155 SP-Tstat Open,TC6,26.9,16.9,385.2,never reached,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC7,26.9,1.5,4.7,27.4,308.4
+Manometer Tree 150 & 155 SP-Tstat Open,TC8,28.1,1.2,3.8,304.0,308.7
+Manometer Tree 150 & 155 SP-Tstat Open,TC9,28.3,0.9,5.9,306.7,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC10,28.6,14.8,386.0,never reached,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC11,30.7,1.8,5.0,173.4,309.7
+Manometer Tree 150 & 155 SP-Tstat Open,TC12,32.9,1.1,4.1,304.1,309.9
+Manometer Tree 150 & 155 SP-Tstat Open,TC13,33.0,0.8,3.7,304.6,378.2
+Manometer Tree 150 & 155 SP-Tstat Open,TC14,33.6,10.3,323.9,never reached,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC15,44.7,1.2,5.2,177.2,313.8
+Manometer Tree 150 & 155 SP-Tstat Open,TC16,62.3,already above,6.2,304.2,343.2
+Manometer Tree 150 & 155 SP-Tstat Open,TC17,75.7,already above,5.1,304.3,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC18,49.5,12.2,never reached,never reached,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC19,52.0,already above,4.2,174.4,317.8
+Manometer Tree 150 & 155 SP-Tstat Open,TC20,65.1,already above,5.2,305.0,380.7
+Manometer Tree 150 & 155 SP-Tstat Open,TC21,74.7,already above,3.6,304.5,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC22,48.7,19.4,never reached,never reached,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC23,67.2,already above,2.1,5.8,310.1
+Manometer Tree 150 & 155 SP-Tstat Open,TC24,128.6,already above,already above,4.9,never reached
+Manometer Tree 150 & 155 SP-Tstat Open,TC25,26.0,8.1,never reached,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC1,27.4,3.7,115.7,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC2,27.3,110.4,262.8,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC3,27.3,110.4,262.6,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC4,27.0,110.1,262.4,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC5,26.9,109.9,262.4,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC6,27.0,135.2,never reached,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC7,27.1,22.0,157.3,271.0,never reached
+"Manometer Tree 50, 100 & 150 SP",TC8,27.0,109.9,262.2,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC9,26.9,109.8,263.9,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC10,27.1,129.0,never reached,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC11,50.5,already above,220.8,232.5,never reached
+"Manometer Tree 50, 100 & 150 SP",TC12,27.5,36.8,261.9,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC13,27.5,55.8,262.4,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC14,28.3,116.3,never reached,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC15,29.2,17.1,120.1,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC16,33.3,11.8,117.9,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC17,38.7,7.9,114.5,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC18,36.8,40.8,never reached,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC19,29.2,16.3,116.0,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC20,31.5,14.0,116.3,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC21,35.6,9.9,113.4,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC22,35.6,49.1,never reached,never reached,never reached
+"Manometer Tree 50, 100 & 150 SP",TC23,26.8,19.5,111.8,267.5,never reached
+"Manometer Tree 50, 100 & 150 SP",TC24,26.0,12.0,25.9,265.2,never reached
+"Manometer Tree 50, 100 & 150 SP",TC25,27.4,268.0,never reached,never reached,never reached
+Test Tstat open,TC1,205.2,already above,already above,already above,already above
+Test Tstat open,TC2,107.9,already above,already above,4.7,16.7
+Test Tstat open,TC3,123.9,already above,already above,2.6,11.8
+Test Tstat open,TC4,157.6,already above,already above,already above,4.8
+Test Tstat open,TC5,156.9,already above,already above,already above,never reached
+Test Tstat open,TC6,32.2,7.2,never reached,never reached,never reached
+Test Tstat open,TC7,156.4,already above,already above,already above,3.8
+Test Tstat open,TC8,162.4,already above,already above,already above,4.1
+Test Tstat open,TC9,122.1,already above,already above,4.2,never reached
+Test Tstat open,TC10,33.2,6.6,never reached,never reached,never reached
+Test Tstat open,TC11,147.0,already above,already above,0.2,4.9
+Test Tstat open,TC12,150.9,already above,already above,already above,5.8
+Test Tstat open,TC13,143.1,already above,already above,0.9,never reached
+Test Tstat open,TC14,37.8,3.8,never reached,never reached,never reached
+Test Tstat open,TC15,128.0,already above,already above,2.2,11.4
+Test Tstat open,TC16,101.9,already above,already above,6.5,never reached
+Test Tstat open,TC17,96.4,already above,0.7,12.2,never reached
+Test Tstat open,TC18,40.3,never reached,never reached,never reached,never reached
+Test Tstat open,TC19,134.1,already above,already above,1.7,15.4
+Test Tstat open,TC20,109.1,already above,already above,5.5,never reached
+Test Tstat open,TC21,104.9,already above,already above,9.8,never reached
+Test Tstat open,TC22,40.0,never reached,never reached,never reached,never reached
+Test Tstat open,TC23,174.3,already above,already above,already above,3.3
+Test Tstat open,TC24,161.0,already above,already above,already above,never reached
+Test Tstat open,TC25,51.0,already above,never reached,never reached,never reached

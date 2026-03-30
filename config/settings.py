@@ -32,3 +32,9 @@ ZSCORE_THRESHOLD = 3.0       # standard deviations for Z-Score method
 IQR_MULTIPLIER = 1.5         # multiplier for IQR method
 ISOLATION_FOREST_CONTAMINATION = 0.05  # expected proportion of anomalies
 FROZEN_WINDOW = 10           # consecutive identical readings to flag as frozen
+
+# Set point tolerance for pass/fail
+SETPOINT_TOLERANCE = 10.0    # +/- 10°C from set point to pass
+
+# Ramp up target temperatures to measure time-to-reach
+RAMP_TARGETS = [50, 100, 150, 200]  # °C
