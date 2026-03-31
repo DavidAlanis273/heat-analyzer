@@ -24,7 +24,7 @@ sys.path.insert(0, repo_root)
 
 import utils.reader
 importlib.reload(utils.reader)
-
+S
 from utils.detection import run_all_detection
 from utils.reader import get_thermocouple_columns
 from config.settings import (

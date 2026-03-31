@@ -1,0 +1,1149 @@
+{
+  "datasets": [
+    {
+      "name": "fed891f4",
+      "displayName": "heater_profiles_david",
+      "queryLines": [
+        "SELECT * FROM eet_dev_gold.default.heater_profiles_david"
+      ]
+    },
+    {
+      "name": "68140929",
+      "displayName": "summary_report_david",
+      "queryLines": [
+        "SELECT * FROM eet_dev_gold.default.summary_report_david"
+      ]
+    },
+    {
+      "name": "fd85d5bc",
+      "displayName": "setpoint_averages_david",
+      "queryLines": [
+        "SELECT * FROM eet_dev_gold.default.setpoint_averages_david"
+      ]
+    },
+    {
+      "name": "0f23be7b",
+      "displayName": "anomalies_david",
+      "queryLines": [
+        "SELECT * FROM eet_dev_gold.default.anomalies_david"
+      ]
+    },
+    {
+      "name": "d7e5e9da",
+      "displayName": "pass_fail_results_david",
+      "queryLines": [
+        "SELECT * FROM eet_dev_gold.default.pass_fail_results_david"
+      ]
+    },
+    {
+      "name": "adc10fcb",
+      "displayName": "ramp_up_times_david",
+      "queryLines": [
+        "SELECT * FROM eet_dev_gold.default.ramp_up_times_david"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "ae260b3a",
+      "displayName": "Summary test",
+      "layout": [
+        {
+          "widget": {
+            "name": "max-temperature-by-thermocouple",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fed891f4",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "thermocouple",
+                      "expression": "`thermocouple`"
+                    },
+                    {
+                      "name": "temp_max",
+                      "expression": "`temp_max`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "showDescription": false,
+                "title": "                                                                                                            Max Temperature by Thermocouple",
+                "headerAlignment": "left"
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "thermocouple",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "temp_max",
+                  "axis": {
+                    "hideGrid": false,
+                    "hideLabels": false,
+                    "labelAngle": 0
+                  },
+                  "scale": {
+                    "type": "quantitative",
+                    "reverse": false
+                  }
+                },
+                "color": {
+                  "fieldName": "heater_id",
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "Manometer Tree 150 & 155 SP-Tstat Open",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 1
+                        }
+                      }
+                    ]
+                  }
+                },
+                "label": {
+                  "show": false
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 9,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "consensus-anomalies-by-thermocouple",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "0f23be7b",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "thermocouple",
+                      "expression": "`thermocouple`"
+                    },
+                    {
+                      "name": "count(anomaly_consensus)",
+                      "expression": "COUNT(`anomaly_consensus`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "                                                                                                       Consensus Anomalies by Thermocouple"
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "thermocouple",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "count(anomaly_consensus)",
+                  "axis": {
+                    "hideGrid": false,
+                    "hideLabels": false,
+                    "labelAngle": 0
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "heater_id",
+                  "legend": {
+                    "hide": false,
+                    "hideTitle": false,
+                    "position": "right"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 36,
+            "width": 9,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "perfomance-report-by-thermocouple-tc",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "68140929",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "thermocouple",
+                      "expression": "`thermocouple`"
+                    },
+                    {
+                      "name": "temp_initial",
+                      "expression": "`temp_initial`"
+                    },
+                    {
+                      "name": "temp_final",
+                      "expression": "`temp_final`"
+                    },
+                    {
+                      "name": "temp_min",
+                      "expression": "`temp_min`"
+                    },
+                    {
+                      "name": "temp_max",
+                      "expression": "`temp_max`"
+                    },
+                    {
+                      "name": "temp_mean",
+                      "expression": "`temp_mean`"
+                    },
+                    {
+                      "name": "heating_rate",
+                      "expression": "`heating_rate`"
+                    },
+                    {
+                      "name": "stability",
+                      "expression": "`stability`"
+                    },
+                    {
+                      "name": "overshoot",
+                      "expression": "`overshoot`"
+                    },
+                    {
+                      "name": "anomaly_count",
+                      "expression": "`anomaly_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Perfomance Report by Thermocouple (TC)"
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "heater_id"
+                  },
+                  {
+                    "fieldName": "thermocouple"
+                  },
+                  {
+                    "fieldName": "temp_initial"
+                  },
+                  {
+                    "fieldName": "temp_final"
+                  },
+                  {
+                    "fieldName": "temp_min"
+                  },
+                  {
+                    "fieldName": "temp_max"
+                  },
+                  {
+                    "fieldName": "temp_mean"
+                  },
+                  {
+                    "fieldName": "heating_rate"
+                  },
+                  {
+                    "fieldName": "stability"
+                  },
+                  {
+                    "fieldName": "overshoot"
+                  },
+                  {
+                    "fieldName": "anomaly_count"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 44,
+            "width": 12,
+            "height": 16
+          }
+        },
+        {
+          "widget": {
+            "name": "stability-by-thermocouple-lower-better",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fed891f4",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "thermocouple",
+                      "expression": "`thermocouple`"
+                    },
+                    {
+                      "name": "sum(stability)",
+                      "expression": "SUM(`stability`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "                                                                                                       Stability by Thermocouple (lower = better)",
+                "showDescription": false
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "thermocouple",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(stability)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "heater_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 9,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "min-temperature-by-thermocouple",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fed891f4",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "thermocouple",
+                      "expression": "`thermocouple`"
+                    },
+                    {
+                      "name": "sum(temp_min)",
+                      "expression": "SUM(`temp_min`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "                                                                                                               Min Temperature by Thermocouple"
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "thermocouple",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(temp_min)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "heater_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 9,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "temperature-range-by-thermocouple-max-min",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fed891f4",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "thermocouple",
+                      "expression": "`thermocouple`"
+                    },
+                    {
+                      "name": "sum(temp_range)",
+                      "expression": "SUM(`temp_range`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "                                                                                                     Temperature Range by Thermocouple"
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "thermocouple",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(temp_range)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "heater_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 9,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "overshoot-by-thermocouple",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fed891f4",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "thermocouple",
+                      "expression": "`thermocouple`"
+                    },
+                    {
+                      "name": "sum(overshoot)",
+                      "expression": "SUM(`overshoot`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "                                                                                                               Overshoot by Thermocouple"
+              },
+              "mark": {
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "thermocouple",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(overshoot)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "heater_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 30,
+            "width": 9,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "399db4c2",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fd85d5bc",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "set_point",
+                      "expression": "`set_point`"
+                    },
+                    {
+                      "name": "TC1",
+                      "expression": "`TC1`"
+                    },
+                    {
+                      "name": "TC2",
+                      "expression": "`TC2`"
+                    },
+                    {
+                      "name": "TC3",
+                      "expression": "`TC3`"
+                    },
+                    {
+                      "name": "TC4",
+                      "expression": "`TC4`"
+                    },
+                    {
+                      "name": "TC5",
+                      "expression": "`TC5`"
+                    },
+                    {
+                      "name": "TC6",
+                      "expression": "`TC6`"
+                    },
+                    {
+                      "name": "TC7",
+                      "expression": "`TC7`"
+                    },
+                    {
+                      "name": "TC8",
+                      "expression": "`TC8`"
+                    },
+                    {
+                      "name": "TC9",
+                      "expression": "`TC9`"
+                    },
+                    {
+                      "name": "TC10",
+                      "expression": "`TC10`"
+                    },
+                    {
+                      "name": "TC11",
+                      "expression": "`TC11`"
+                    },
+                    {
+                      "name": "TC12",
+                      "expression": "`TC12`"
+                    },
+                    {
+                      "name": "TC13",
+                      "expression": "`TC13`"
+                    },
+                    {
+                      "name": "TC14",
+                      "expression": "`TC14`"
+                    },
+                    {
+                      "name": "TC15",
+                      "expression": "`TC15`"
+                    },
+                    {
+                      "name": "TC16",
+                      "expression": "`TC16`"
+                    },
+                    {
+                      "name": "TC17",
+                      "expression": "`TC17`"
+                    },
+                    {
+                      "name": "TC18",
+                      "expression": "`TC18`"
+                    },
+                    {
+                      "name": "TC19",
+                      "expression": "`TC19`"
+                    },
+                    {
+                      "name": "TC20",
+                      "expression": "`TC20`"
+                    },
+                    {
+                      "name": "TC21",
+                      "expression": "`TC21`"
+                    },
+                    {
+                      "name": "TC22",
+                      "expression": "`TC22`"
+                    },
+                    {
+                      "name": "TC23",
+                      "expression": "`TC23`"
+                    },
+                    {
+                      "name": "TC24",
+                      "expression": "`TC24`"
+                    },
+                    {
+                      "name": "TC25",
+                      "expression": "`TC25`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "heater_id"
+                  },
+                  {
+                    "fieldName": "set_point"
+                  },
+                  {
+                    "fieldName": "TC1"
+                  },
+                  {
+                    "fieldName": "TC2"
+                  },
+                  {
+                    "fieldName": "TC3"
+                  },
+                  {
+                    "fieldName": "TC4"
+                  },
+                  {
+                    "fieldName": "TC5"
+                  },
+                  {
+                    "fieldName": "TC6"
+                  },
+                  {
+                    "fieldName": "TC7"
+                  },
+                  {
+                    "fieldName": "TC8"
+                  },
+                  {
+                    "fieldName": "TC9"
+                  },
+                  {
+                    "fieldName": "TC10"
+                  },
+                  {
+                    "fieldName": "TC11"
+                  },
+                  {
+                    "fieldName": "TC12"
+                  },
+                  {
+                    "fieldName": "TC13"
+                  },
+                  {
+                    "fieldName": "TC14"
+                  },
+                  {
+                    "fieldName": "TC15"
+                  },
+                  {
+                    "fieldName": "TC16"
+                  },
+                  {
+                    "fieldName": "TC17"
+                  },
+                  {
+                    "fieldName": "TC18"
+                  },
+                  {
+                    "fieldName": "TC19"
+                  },
+                  {
+                    "fieldName": "TC20"
+                  },
+                  {
+                    "fieldName": "TC21"
+                  },
+                  {
+                    "fieldName": "TC22"
+                  },
+                  {
+                    "fieldName": "TC23"
+                  },
+                  {
+                    "fieldName": "TC24"
+                  },
+                  {
+                    "fieldName": "TC25"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 60,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "pass-fail-analysis-by-set-point",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "d7e5e9da",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "set_point",
+                      "expression": "`set_point`"
+                    },
+                    {
+                      "name": "TC1",
+                      "expression": "`TC1`"
+                    },
+                    {
+                      "name": "TC2",
+                      "expression": "`TC2`"
+                    },
+                    {
+                      "name": "TC3",
+                      "expression": "`TC3`"
+                    },
+                    {
+                      "name": "TC4",
+                      "expression": "`TC4`"
+                    },
+                    {
+                      "name": "TC5",
+                      "expression": "`TC5`"
+                    },
+                    {
+                      "name": "TC6",
+                      "expression": "`TC6`"
+                    },
+                    {
+                      "name": "TC7",
+                      "expression": "`TC7`"
+                    },
+                    {
+                      "name": "TC8",
+                      "expression": "`TC8`"
+                    },
+                    {
+                      "name": "TC9",
+                      "expression": "`TC9`"
+                    },
+                    {
+                      "name": "TC10",
+                      "expression": "`TC10`"
+                    },
+                    {
+                      "name": "TC11",
+                      "expression": "`TC11`"
+                    },
+                    {
+                      "name": "TC12",
+                      "expression": "`TC12`"
+                    },
+                    {
+                      "name": "TC13",
+                      "expression": "`TC13`"
+                    },
+                    {
+                      "name": "TC14",
+                      "expression": "`TC14`"
+                    },
+                    {
+                      "name": "TC15",
+                      "expression": "`TC15`"
+                    },
+                    {
+                      "name": "TC16",
+                      "expression": "`TC16`"
+                    },
+                    {
+                      "name": "TC17",
+                      "expression": "`TC17`"
+                    },
+                    {
+                      "name": "TC18",
+                      "expression": "`TC18`"
+                    },
+                    {
+                      "name": "TC19",
+                      "expression": "`TC19`"
+                    },
+                    {
+                      "name": "TC20",
+                      "expression": "`TC20`"
+                    },
+                    {
+                      "name": "TC21",
+                      "expression": "`TC21`"
+                    },
+                    {
+                      "name": "TC22",
+                      "expression": "`TC22`"
+                    },
+                    {
+                      "name": "TC23",
+                      "expression": "`TC23`"
+                    },
+                    {
+                      "name": "TC24",
+                      "expression": "`TC24`"
+                    },
+                    {
+                      "name": "TC25",
+                      "expression": "`TC25`"
+                    },
+                    {
+                      "name": "total_pass",
+                      "expression": "`total_pass`"
+                    },
+                    {
+                      "name": "total_fail",
+                      "expression": "`total_fail`"
+                    },
+                    {
+                      "name": "pass_rate",
+                      "expression": "`pass_rate`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Pass/Fail Analysis by set point"
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "heater_id"
+                  },
+                  {
+                    "fieldName": "set_point"
+                  },
+                  {
+                    "fieldName": "TC1"
+                  },
+                  {
+                    "fieldName": "TC2"
+                  },
+                  {
+                    "fieldName": "TC3"
+                  },
+                  {
+                    "fieldName": "TC4"
+                  },
+                  {
+                    "fieldName": "TC5"
+                  },
+                  {
+                    "fieldName": "TC6"
+                  },
+                  {
+                    "fieldName": "TC7"
+                  },
+                  {
+                    "fieldName": "TC8"
+                  },
+                  {
+                    "fieldName": "TC9"
+                  },
+                  {
+                    "fieldName": "TC10"
+                  },
+                  {
+                    "fieldName": "TC11"
+                  },
+                  {
+                    "fieldName": "TC12"
+                  },
+                  {
+                    "fieldName": "TC13"
+                  },
+                  {
+                    "fieldName": "TC14"
+                  },
+                  {
+                    "fieldName": "TC15"
+                  },
+                  {
+                    "fieldName": "TC16"
+                  },
+                  {
+                    "fieldName": "TC17"
+                  },
+                  {
+                    "fieldName": "TC18"
+                  },
+                  {
+                    "fieldName": "TC19"
+                  },
+                  {
+                    "fieldName": "TC20"
+                  },
+                  {
+                    "fieldName": "TC21"
+                  },
+                  {
+                    "fieldName": "TC22"
+                  },
+                  {
+                    "fieldName": "TC23"
+                  },
+                  {
+                    "fieldName": "TC24"
+                  },
+                  {
+                    "fieldName": "TC25"
+                  },
+                  {
+                    "fieldName": "total_pass"
+                  },
+                  {
+                    "fieldName": "total_fail"
+                  },
+                  {
+                    "fieldName": "pass_rate"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 65,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "time-to-reach-target-temperatures",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "adc10fcb",
+                  "fields": [
+                    {
+                      "name": "heater_id",
+                      "expression": "`heater_id`"
+                    },
+                    {
+                      "name": "thermocouple",
+                      "expression": "`thermocouple`"
+                    },
+                    {
+                      "name": "start_temp",
+                      "expression": "`start_temp`"
+                    },
+                    {
+                      "name": "time_to_50C_min",
+                      "expression": "`time_to_50C_min`"
+                    },
+                    {
+                      "name": "time_to_100C_min",
+                      "expression": "`time_to_100C_min`"
+                    },
+                    {
+                      "name": "time_to_150C_min",
+                      "expression": "`time_to_150C_min`"
+                    },
+                    {
+                      "name": "time_to_200C_min",
+                      "expression": "`time_to_200C_min`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Time to Reach Target Temperatures"
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "heater_id"
+                  },
+                  {
+                    "fieldName": "thermocouple"
+                  },
+                  {
+                    "fieldName": "start_temp"
+                  },
+                  {
+                    "fieldName": "time_to_50C_min"
+                  },
+                  {
+                    "fieldName": "time_to_100C_min"
+                  },
+                  {
+                    "fieldName": "time_to_150C_min"
+                  },
+                  {
+                    "fieldName": "time_to_200C_min"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 70,
+            "width": 10,
+            "height": 16
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "f986f438",
+      "displayName": "Global Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
