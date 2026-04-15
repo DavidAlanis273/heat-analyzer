@@ -5,12 +5,12 @@ import re
 
 def read_heater_excel(filepath):
     """
-    Lee un archivo Excel de prueba de calefactor.
-    Los datos están en Sheet2, con metadata en Sheet1.
+    Reads a heater test Excel file.
+    Data is in Sheet2, with metadata in Sheet1.
     """
     df = pd.read_excel(filepath, sheet_name="Sheet2", engine="openpyxl")
     
-    # Identificar columnas de datos reales (antes de columnas vacías)
+    # Identify actual data columns (before empty columns)
     data_cols = []
     for col in df.columns:
         if col is None or str(col).startswith("Unnamed"):
@@ -27,13 +27,13 @@ def read_heater_excel(filepath):
 
 def _convert_time_to_seconds(df):
     """
-    Convierte la columna de tiempo a segundos transcurridos.
-    Maneja correctamente el cruce de 12h (PM) y medianoche.
+    Converts the time column to elapsed seconds.
+    Correctly handles 12h (PM) and midnight crossovers.
     """
     time_col = df.columns[0]
     times = df[time_col].copy()
     
-    # Convertir time objects a total seconds desde medianoche
+    # Convert time objects to total seconds since midnight
     total_seconds = []
     for t in times:
         if hasattr(t, 'hour'):
@@ -42,17 +42,17 @@ def _convert_time_to_seconds(df):
         else:
             total_seconds.append(None)
     
-    # Calcular elapsed usando diferencias consecutivas
-    # Si la diferencia es negativa, verificar si es un cruce de 12h o de 24h
+    # Calculate elapsed using consecutive differences
+    # If the difference is negative, check if it's a 12h or 24h crossover
     elapsed = [0]
     for i in range(1, len(total_seconds)):
         if total_seconds[i] is not None and total_seconds[i-1] is not None:
             diff = total_seconds[i] - total_seconds[i-1]
             if diff < 0:
-                # Intentar corrección de 12 horas primero
+                # Try 12-hour correction first
                 diff_12h = diff + 43200
                 diff_24h = diff + 86400
-                # Si sumar 12h da un intervalo razonable (< 60 seg), usar esa
+                # If adding 12h gives a reasonable interval (< 60 sec), use that
                 if 0 < diff_12h < 60:
                     diff = diff_12h
                 else:
@@ -67,7 +67,7 @@ def _convert_time_to_seconds(df):
     return df
 
 def read_all_heaters(data_dir):
-    """Lee todos los Excel y los combina con columna heater_id."""
+    """Reads all Excel files and combines them with a heater_id column."""
     xlsx_files = [f for f in os.listdir(data_dir) if f.endswith(".xlsx")]
     xlsx_files.sort()
     
@@ -89,15 +89,15 @@ def read_all_heaters(data_dir):
 
 
 def get_thermocouple_columns(df):
-    """Devuelve solo columnas TC con número (TC1, TC2, etc.)."""
+    """Returns only numbered TC columns (TC1, TC2, etc.)."""
     return [c for c in df.columns if re.match(r'^TC\d+$', c.strip())]
 
 
 def get_ts_columns(df):
-    """Devuelve columnas TS."""
+    """Returns TS columns."""
     return [c for c in df.columns if c.startswith("TS")]
 
 
 def get_ot_columns(df):
-    """Devuelve columnas OT."""
+    """Returns OT columns."""
     return [c for c in df.columns if c.startswith("OT")]

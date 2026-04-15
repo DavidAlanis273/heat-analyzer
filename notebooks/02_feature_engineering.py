@@ -268,7 +268,7 @@ for heater_id in df['heater_id'].unique():
         status = "✓ PASS" if failed == 0 else "✗ FAIL"
         print(f"\n  Set Point {sp}°C: {status} — {passed} pass, {failed} fail ({rate}% pass rate)")
         
-        # Mostrar los que fallaron
+        # Show the failed TC
         fails = []
         for tc in active_tcs:
             val = row.get(tc)
@@ -319,7 +319,7 @@ for heater_id in df['heater_id'].unique():
                 line += f" {val:>9.1f} min"
         print(line)
     
-    # Resumen: el más rápido y más lento en llegar a cada target
+    # Resumen: el más rápido y más lento en llegar a cada target 
     print(f"\n  Summary:")
     for target in RAMP_TARGETS:
         col = f'time_to_{target}C_min'

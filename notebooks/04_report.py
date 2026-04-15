@@ -111,7 +111,7 @@ for heater_id in df_clean['heater_id'].unique():
     
     tcs_to_plot = list(dict.fromkeys([hottest, coldest, most_unstable, most_anomalies]))[:4]
     
-    # Si hay menos de 4, agregar más
+    # If there are less than 4, add more
     while len(tcs_to_plot) < 4:
         for tc in tc_columns:
             if tc not in tcs_to_plot and tc in hdf.columns and hdf[tc].notna().any():
@@ -194,7 +194,7 @@ print("Heatmap saved")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 5: Step 5: Anomalies chart - by method and by file
+# MAGIC ## Step 5: Anomalies chart - by method and by file
 
 # COMMAND ----------
 
@@ -227,7 +227,7 @@ print("Chart saved")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Paso 6: Step 5: Final report by file - what engineers ned to see
+# MAGIC ## Step 6: Final report by file - what engineers ned to see
 
 # COMMAND ----------
 
@@ -249,7 +249,7 @@ for heater_id in df_clean['heater_id'].unique():
     print(f"{'─'*75}")
     print(f"  Duration: {duration_min:.1f} min ({duration_hrs:.1f} hrs) | Readings: {len(hdf)} | Active TCs: {len(active_tcs)}")
     
-    # Tabla de cada TC
+    # table of each TC
     print(f"\n  {'TC':<6} {'Start':>7} {'Final':>7} {'Max':>7} {'Avg':>7} {'Rate':>9} {'Stab':>6} {'Anom':>5}  Notes")
     print(f"  {'─'*85}")
     
@@ -259,7 +259,7 @@ for heater_id in df_clean['heater_id'].unique():
         tc = row['thermocouple']
         tc_anom_count = len(h_anom[h_anom['thermocouple'] == tc])
         
-        # Generar notas automáticas
+        # generate automatic notes
         notes = []
         avg_max = hp['temp_max'].mean()
         
@@ -285,14 +285,14 @@ for heater_id in df_clean['heater_id'].unique():
         
         print(f"  {tc:<6} {row['temp_initial']:>6.1f}° {row['temp_final']:>6.1f}° {row['temp_max']:>6.1f}° {row['temp_mean']:>6.1f}° {row['heating_rate_c_per_min']:>8.3f} {row['stability']:>6.2f} {tc_anom_count:>5}  {notes_str}")
     
-    # Resumen general del archivo
+    # General summary by file
     total_anom = len(h_anom)
     tcs_affected = h_anom['thermocouple'].nunique()
     
     print(f"\n  Summary:")
     print(f"    Total anomalies: {total_anom} across {tcs_affected} thermocouples")
     
-    # Recomendaciones específicas
+    # specific recomendations 
     recommendations = []
     
     cold_tcs = hp[hp['temp_max'] < avg_max * 0.5]['thermocouple'].tolist()
@@ -324,7 +324,7 @@ print(f"\n{'='*75}")
 
 # COMMAND ----------
 
-# Guardar reporte como CSV
+# Save report as CSV
 report_rows = []
 for heater_id in df_clean['heater_id'].unique():
     hdf = df_clean[df_clean['heater_id'] == heater_id]

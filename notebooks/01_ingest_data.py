@@ -1,5 +1,6 @@
 # Databricks notebook source
 
+
 # COMMAND ----------
 
 # MAGIC %pip install openpyxl --quiet
@@ -44,7 +45,7 @@ for f in sorted(xlsx_files):
 df = read_all_heaters(data_path)
 print(f"\nDataFrame combinado: {df.shape[0]} rows x {df.shape[1]} columns")
 
-#COMMAND -----------
+# COMMAND ----------
 
 import os
 base = '/Workspace/Users/david.alanis@watlow.com'
@@ -64,7 +65,7 @@ else:
 
 # COMMAND ----------
 
-# Vista general
+
 print("Columnas disponibles:")
 for col in df.columns:
     non_null = df[col].notna().sum()
@@ -72,7 +73,7 @@ for col in df.columns:
 
 # COMMAND ----------
 
-# Resumen por heater
+# Summanry by heater
 for heater_id in df['heater_id'].unique():
     hdf = df[df['heater_id'] == heater_id]
     tc_cols = get_thermocouple_columns(hdf)
@@ -91,11 +92,11 @@ for heater_id in df['heater_id'].unique():
 
 # COMMAND ----------
 
-# Contar nulls antes de limpiar
+# Count nulls
 null_count_before = df.isnull().sum().sum()
 print(f"Total null values: {null_count_before}")
 
-# Identificar columnas completamente vacías por heater y reportar
+# Identify empty columns
 for heater_id in df['heater_id'].unique():
     hdf = df[df['heater_id'] == heater_id]
     empty_cols = [c for c in hdf.columns if hdf[c].isnull().all()]

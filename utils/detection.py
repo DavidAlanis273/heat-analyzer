@@ -4,15 +4,15 @@ import numpy as np
 
 def detect_zscore_anomalies(series, threshold=3.0):
     """
-    Detecta anomalías usando Z-Score.
-    Marca lecturas que están a más de 'threshold' desviaciones estándar del promedio.
+    Detects anomalies using Z-Score.
+    Flags readings that are more than 'threshold' standard deviations from the mean.
     
     Args:
-        series: pandas Series con valores de temperatura
-        threshold: número de desviaciones estándar para considerar anomalía
+        series: pandas Series with temperature values
+        threshold: number of standard deviations to consider an anomaly
     
     Returns:
-        pandas Series de booleans (True = anomalía)
+        pandas Series of booleans (True = anomaly)
     """
     mean = series.mean()
     std = series.std()
@@ -26,15 +26,15 @@ def detect_zscore_anomalies(series, threshold=3.0):
 
 def detect_iqr_anomalies(series, multiplier=1.5):
     """
-    Detecta anomalías usando IQR (Interquartile Range).
-    Marca lecturas fuera de [Q1 - multiplier*IQR, Q3 + multiplier*IQR].
+    Detects anomalies using IQR (Interquartile Range).
+    Flags readings outside [Q1 - multiplier*IQR, Q3 + multiplier*IQR].
     
     Args:
-        series: pandas Series con valores de temperatura
-        multiplier: multiplicador del IQR para definir límites
+        series: pandas Series with temperature values
+        multiplier: IQR multiplier to define bounds
     
     Returns:
-        pandas Series de booleans (True = anomalía)
+        pandas Series of booleans (True = anomaly)
     """
     q1 = series.quantile(0.25)
     q3 = series.quantile(0.75)
@@ -48,20 +48,20 @@ def detect_iqr_anomalies(series, multiplier=1.5):
 
 def detect_isolation_forest_anomalies(df, feature_columns, contamination=0.05):
     """
-    Detecta anomalías usando Isolation Forest (ML).
-    Aprende patrones normales y marca lo que no encaja.
+    Detects anomalies using Isolation Forest (ML).
+    Learns normal patterns and flags what doesn't fit.
     
     Args:
-        df: DataFrame con los datos
-        feature_columns: lista de columnas a usar como features
-        contamination: proporción esperada de anomalías (0.05 = 5%)
+        df: DataFrame with the data
+        feature_columns: list of columns to use as features
+        contamination: expected proportion of anomalies (0.05 = 5%)
     
     Returns:
-        pandas Series de booleans (True = anomalía)
+        pandas Series of booleans (True = anomaly)
     """
     from sklearn.ensemble import IsolationForest
     
-    # Preparar datos (eliminar nulls para el modelo)
+    # Prepare data (remove nulls for the model)
     features = df[feature_columns].copy()
     valid_mask = features.notna().all(axis=1)
     
@@ -79,7 +79,7 @@ def detect_isolation_forest_anomalies(df, feature_columns, contamination=0.05):
     )
     
     predictions = model.fit_predict(X)
-    # Isolation Forest devuelve -1 para anomalías, 1 para normal
+    # Isolation Forest returns -1 for anomalies, 1 for normal
     result[valid_mask] = predictions == -1
     
     return result
@@ -87,26 +87,26 @@ def detect_isolation_forest_anomalies(df, feature_columns, contamination=0.05):
 
 def detect_frozen_readings(series, window=10):
     """
-    Detecta lecturas congeladas — cuando el sensor manda el mismo
-    valor exacto durante 'window' lecturas consecutivas.
+    Detects frozen readings — when the sensor sends the same
+    exact value for 'window' consecutive readings.
     
     Args:
-        series: pandas Series con valores de temperatura
-        window: número de lecturas idénticas consecutivas para marcar
+        series: pandas Series with temperature values
+        window: number of identical consecutive readings to flag
     
     Returns:
-        pandas Series de booleans (True = frozen)
+        pandas Series of booleans (True = frozen)
     """
     result = pd.Series(False, index=series.index)
     
-    # Calcular diferencia entre lecturas consecutivas
+    # Calculate difference between consecutive readings
     diff = series.diff().abs()
     
-    # Contar rachas de ceros (lecturas idénticas)
+    # Count streaks of zeros (identical readings)
     is_same = diff == 0
     streak = is_same.groupby((~is_same).cumsum()).cumcount() + 1
     
-    # Marcar donde la racha es >= window
+    # Flag where the streak is >= window
     result = (is_same) & (streak >= window)
     
     return result
@@ -114,15 +114,15 @@ def detect_frozen_readings(series, window=10):
 
 def run_all_detection(df, tc_column, settings):
     """
-    Corre los 4 métodos de detección en una columna de termopar.
+    Runs all 4 detection methods on a thermocouple column.
     
     Args:
-        df: DataFrame de un solo heater
-        tc_column: nombre de la columna del termopar
-        settings: diccionario con parámetros de config
+        df: DataFrame for a single heater
+        tc_column: name of the thermocouple column
+        settings: dictionary with configuration parameters
     
     Returns:
-        DataFrame con resultados de detección
+        DataFrame with detection results
     """
     series = df[tc_column].dropna()
     valid_idx = series.index
@@ -147,7 +147,7 @@ def run_all_detection(df, tc_column, settings):
         series, window=settings['frozen_window']
     )
     
-    # Isolation Forest (usa rolling features si existen)
+    # Isolation Forest (uses rolling features if they exist)
     feature_cols = [tc_column]
     roc_col = f"{tc_column}_rate_of_change"
     ravg_col = f"{tc_column}_rolling_avg"
@@ -162,7 +162,7 @@ def run_all_detection(df, tc_column, settings):
         contamination=settings['iforest_contamination']
     )
     
-    # Anomalía combinada: marcada por al menos 2 métodos
+    # Combined anomaly: flagged by at least 2 methods
     methods = ['anomaly_zscore', 'anomaly_iqr', 'anomaly_iforest', 'anomaly_frozen']
     results['anomaly_count'] = results[methods].sum(axis=1)
     results['anomaly_consensus'] = results['anomaly_count'] >= 2

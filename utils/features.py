@@ -4,15 +4,15 @@ import numpy as np
 
 def add_rolling_features(df, column, window=30):
     """
-    Agrega rolling average, rolling std y rate of change a una columna.
+    Adds rolling average, rolling std, and rate of change to a column.
     
     Args:
-        df: DataFrame con los datos
-        column: nombre de la columna de temperatura
-        window: tamaño de la ventana para rolling stats
+        df: DataFrame with the data
+        column: name of the temperature column
+        window: window size for rolling stats
     
     Returns:
-        DataFrame con las columnas nuevas agregadas
+        DataFrame with the new columns added
     """
     df[f"{column}_rolling_avg"] = df[column].rolling(window=window, min_periods=1).mean()
     df[f"{column}_rolling_std"] = df[column].rolling(window=window, min_periods=1).std()
@@ -23,16 +23,16 @@ def add_rolling_features(df, column, window=30):
 
 def compute_thermocouple_profile(df, tc_column, elapsed_col="elapsed_seconds", interval_sec=5):
     """
-    Calcula el perfil completo de un termopar.
+    Computes the full profile of a thermocouple.
     
     Args:
-        df: DataFrame de un solo heater
-        tc_column: nombre de la columna del termopar (ej: 'TC1')
-        elapsed_col: columna de tiempo en segundos
-        interval_sec: segundos entre lecturas
+        df: DataFrame for a single heater
+        tc_column: name of the thermocouple column (e.g. 'TC1')
+        elapsed_col: time column in seconds
+        interval_sec: seconds between readings
     
     Returns:
-        Diccionario con todas las métricas del termopar
+        Dictionary with all thermocouple metrics
     """
     series = df[tc_column].dropna()
     
@@ -42,7 +42,7 @@ def compute_thermocouple_profile(df, tc_column, elapsed_col="elapsed_seconds", i
     elapsed = df[elapsed_col]
     duration_min = (elapsed.max() - elapsed.min()) / 60
     
-    # Temperaturas básicas
+    # Basic temperatures
     temp_initial = series.iloc[0]
     temp_final = series.iloc[-1]
     temp_min = series.min()
@@ -50,26 +50,26 @@ def compute_thermocouple_profile(df, tc_column, elapsed_col="elapsed_seconds", i
     temp_mean = series.mean()
     temp_std = series.std()
     
-    # Tasa de calentamiento (°C por minuto)
+    # Heating rate (°C per minute)
     if duration_min > 0:
         heating_rate = (temp_max - temp_initial) / duration_min
     else:
         heating_rate = 0.0
     
-    # Overshoot: diferencia entre el máximo y el valor final
+    # Overshoot: difference between the max and the final value
     overshoot = temp_max - temp_final
     
-    # Estabilidad: std de la última 10% de lecturas (estado estable)
+    # Stability: std of the last 10% of readings (steady state)
     last_10_pct = series.tail(max(1, len(series) // 10))
     stability = last_10_pct.std()
     
-    # Rango total
+    # Total range
     temp_range = temp_max - temp_min
     
     # Rate of change stats
     roc = series.diff().dropna()
-    max_roc = roc.max()  # máxima subida entre lecturas
-    min_roc = roc.min()  # máxima bajada entre lecturas
+    max_roc = roc.max()  # maximum rise between readings
+    min_roc = roc.min()  # maximum drop between readings
     avg_roc = roc.mean()
     
     return {
@@ -94,15 +94,15 @@ def compute_thermocouple_profile(df, tc_column, elapsed_col="elapsed_seconds", i
 
 def compute_heater_profiles(df, tc_columns, heater_id):
     """
-    Calcula el perfil de todos los termopares de un heater.
+    Computes the profile of all thermocouples for a heater.
     
     Args:
-        df: DataFrame de un solo heater
-        tc_columns: lista de columnas de termopares
-        heater_id: identificador del heater
+        df: DataFrame for a single heater
+        tc_columns: list of thermocouple columns
+        heater_id: heater identifier
     
     Returns:
-        DataFrame con una fila por termopar
+        DataFrame with one row per thermocouple
     """
     profiles = []
     
@@ -117,8 +117,8 @@ def compute_heater_profiles(df, tc_columns, heater_id):
 
 def detect_set_points(df, tc_columns, window=60, roc_threshold=0.05):
     """
-    Detecta automáticamente las fases de estado estable (set points)
-    buscando periodos donde la tasa de cambio promedio es cercana a cero.
+    Automatically detects steady-state phases (set points)
+    by looking for periods where the average rate of change is near zero.
     """
     active_tcs = [tc for tc in tc_columns if tc in df.columns and df[tc].notna().any()]
     avg_temp = df[active_tcs].mean(axis=1)
@@ -156,7 +156,7 @@ def detect_set_points(df, tc_columns, window=60, roc_threshold=0.05):
 
 def compute_setpoint_averages(df, tc_columns, set_points):
     """
-    Calcula el promedio de cada TC durante cada fase de set point.
+    Computes the average of each TC during each set point phase.
     """
     rows = []
     for sp in set_points:
@@ -177,7 +177,7 @@ def compute_setpoint_averages(df, tc_columns, set_points):
 
 def compute_setpoint_deltas(avg_table):
     """
-    Calcula la diferencia (delta) entre el promedio de cada TC y el set point.
+    Computes the difference (delta) between each TC's average and the set point.
     """
     delta_rows = []
     for _, row in avg_table.iterrows():
@@ -193,11 +193,11 @@ def compute_setpoint_deltas(avg_table):
 
 def compute_pass_fail(avg_table, delta_table, tolerance=10.0):
     """
-    Evalúa si cada termopar pasa o falla contra la especificación.
-    Pasa si está dentro de +/- tolerance del set point.
+    Evaluates whether each thermocouple passes or fails against the specification.
+    Passes if within +/- tolerance of the set point.
     
     Returns:
-        DataFrame con Pass/Fail por TC por set point
+        DataFrame with Pass/Fail per TC per set point
     """
     results = []
     
@@ -229,16 +229,16 @@ def compute_pass_fail(avg_table, delta_table, tolerance=10.0):
 
 def compute_ramp_up_time(df, tc_columns, targets, elapsed_col='elapsed_seconds'):
     """
-    Calcula cuánto tiempo tarda cada termopar en alcanzar cada temperatura objetivo.
+    Computes how long each thermocouple takes to reach each target temperature.
     
     Args:
-        df: DataFrame de un solo heater
-        tc_columns: lista de columnas TC
-        targets: lista de temperaturas objetivo [50, 100, 150, 200]
-        elapsed_col: columna de tiempo
+        df: DataFrame for a single heater
+        tc_columns: list of TC columns
+        targets: list of target temperatures [50, 100, 150, 200]
+        elapsed_col: time column
     
     Returns:
-        DataFrame con tiempo en minutos para alcanzar cada target
+        DataFrame with time in minutes to reach each target
     """
     results = []
     
@@ -254,12 +254,12 @@ def compute_ramp_up_time(df, tc_columns, targets, elapsed_col='elapsed_seconds')
         row = {'thermocouple': tc, 'start_temp': round(start_temp, 1)}
         
         for target in targets:
-            # Solo calcular si el target está por encima de la temperatura inicial
+            # Only compute if the target is above the initial temperature
             if target <= start_temp:
                 row[f'time_to_{target}C_min'] = 'already above'
                 continue
             
-            # Buscar la primera lectura que alcanza o supera el target
+            # Find the first reading that reaches or exceeds the target
             reached = series[series >= target]
             
             if len(reached) > 0:
@@ -272,7 +272,3 @@ def compute_ramp_up_time(df, tc_columns, targets, elapsed_col='elapsed_seconds')
         results.append(row)
     
     return pd.DataFrame(results)
-    
-
-
-    

@@ -108,7 +108,7 @@ for heater_id in df['heater_id'].unique():
     hdf_anom = df_anomalies[df_anomalies['heater_id'] == heater_id]
     consensus = hdf_anom[hdf_anom['anomaly_consensus'] == True]
     
-    # Contar por fase
+    # Count per phase
     ramping_count = len(consensus[consensus['phase'] == 'ramping']) if 'phase' in consensus.columns else 0
     steady_count = len(consensus[consensus['phase'] == 'steady_state']) if 'phase' in consensus.columns else 0
     
